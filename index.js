@@ -75,9 +75,8 @@ function drawNote(note) {
   }
 }
 
-var i = 0
 function drawRandomNote() {
-  const index = i % NOTES.length; i++;// parseInt(Math.random() * NOTES.length);
+  const index = parseInt(Math.random() * NOTES.length);
   drawNote(NOTES[index]);
 }
 
@@ -90,3 +89,8 @@ document.onmousedown = (e) => {
 }
 
 drawRandomNote();
+
+const periodMs = parseInt(window.location.hash.slice(1));
+if (periodMs) {
+  setInterval(drawRandomNote, periodMs);
+}
