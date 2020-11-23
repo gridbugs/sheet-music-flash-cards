@@ -13,8 +13,7 @@ function treble_y(i) {
 function bass_y(i) {
   return BASS_MIDDLE_C_Y + GAP_WIDTH * i;
 }
-const NOTES = [
-  // treble
+const TREBLE_NOTES = [
   note("B", treble_y(-1), { count: 1, offset: -1, direction: -1 }),
   note("C", treble_y(0), { count: 1, offset: 0, direction: -1 }),
   note("D", treble_y(1)),
@@ -33,7 +32,8 @@ const NOTES = [
   note("C", treble_y(14), { count: 2, offset: 0, direction: 1 }),
   note("D", treble_y(15), { count: 2, offset: 1, direction: 1 }),
   note("E", treble_y(16), { count: 3, offset: 0, direction: 1 }),
-  // bass
+];
+const BASS_NOTES = [
   note("A", bass_y(16), { count: 3, offset: 0, direction: -1 }),
   note("B", bass_y(15), { count: 2, offset: -1, direction: -1 }),
   note("C", bass_y(14), { count: 2, offset: 0, direction: -1 }),
@@ -53,6 +53,20 @@ const NOTES = [
   note("C", bass_y(0), { count: 1, offset: 0, direction: 1 }),
   note("D", bass_y(-1), { count: 1, offset: 1, direction: 1 }),
 ];
+
+const QUERY = window.location.search.substr(1).split("&")
+
+function query_notes() {
+  if (QUERY.indexOf("treble") != -1) {
+    return TREBLE_NOTES;
+  }
+  if (QUERY.indexOf("bass") != -1) {
+    return BASS_NOTES;
+  }
+  return [...TREBLE_NOTES, ...BASS_NOTES];
+}
+
+const NOTES = query_notes();
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -90,7 +104,17 @@ document.onmousedown = (e) => {
 
 drawRandomNote();
 
-const periodMs = parseInt(window.location.hash.slice(1));
+function query_time() {
+  const param = QUERY.filter(p => p.startsWith("time="))[0];
+  if (param !== undefined) {
+    const paramValue = param.split("time=")[1];
+    return parseInt(paramValue);
+  } else {
+    return null;
+  }
+}
+
+const periodMs = query_time();
 if (periodMs) {
   setInterval(drawRandomNote, periodMs);
 }
