@@ -1,7 +1,7 @@
 const X_OFFSET = 420;
 
 function note(name, y, ledger = null) {
-  return { name, x: X_OFFSET, y, ledger };
+  return { name, y, ledger };
 }
 
 const TREBLE_MIDDLE_C_Y = 349;
@@ -63,7 +63,7 @@ function query_notes() {
   if (QUERY.indexOf("bass") != -1) {
     return BASS_NOTES;
   }
-  return [...TREBLE_NOTES, ...BASS_NOTES];
+  return [...BASS_NOTES, ...TREBLE_NOTES];
 }
 
 const NOTES = query_notes();
@@ -73,36 +73,64 @@ const ctx = canvas.getContext("2d");
 
 ctx.fillStyle = "black";
 
-function drawNote(note) {
+function clear() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawNote(note, x) {
   const NOTE_RADIUS = 16;
   const LEDGER_WIDTH = 48;
   const LEDGER_HEIGHT = 8;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.beginPath();
-  ctx.arc(note.x, note.y, NOTE_RADIUS, 0, Math.PI * 2);
+  ctx.arc(x, note.y, NOTE_RADIUS, 0, Math.PI * 2);
   ctx.fill();
   if (note.ledger !== null) {
     for (let i = 0; i < note.ledger.count; i++) {
       const y = note.y + (note.ledger.offset * GAP_WIDTH) + (2 * i * GAP_WIDTH * note.ledger.direction) - (LEDGER_HEIGHT / 2);
-      ctx.fillRect(note.x - LEDGER_WIDTH / 2, y, LEDGER_WIDTH, LEDGER_HEIGHT);
+      ctx.fillRect(x - LEDGER_WIDTH / 2, y, LEDGER_WIDTH, LEDGER_HEIGHT);
     }
   }
 }
 
-function drawRandomNote() {
-  const index = parseInt(Math.random() * NOTES.length);
-  drawNote(NOTES[index]);
+function query_count() {
+  const param = QUERY.filter(p => p.startsWith("count="))[0];
+  if (param !== undefined) {
+    const paramValue = param.split("count=")[1];
+    return parseInt(paramValue);
+  } else {
+    return 1;
+  }
+}
+
+const NOTE_RANGE = 12;
+
+function drawRandomNotes() {
+  clear();
+  const baseIndex = parseInt(Math.random() * NOTES.length);
+  const seen = new Set();
+  for (let i = 0; i < query_count(); i++) {
+    let index;
+    while (true) {
+      const candidate = baseIndex + parseInt(Math.random() * (NOTE_RANGE + 1) - (NOTE_RANGE / 2));
+      if (candidate >= 0 && candidate < NOTES.length && !seen.has(candidate)) {
+        seen.add(candidate);
+        index = candidate;
+        break;
+      }
+    }
+    drawNote(NOTES[index], X_OFFSET + (i * 100));
+  }
 }
 
 document.onkeydown = (e) => {
-  drawRandomNote();
+  drawRandomNotes();
 }
 
 document.onmousedown = (e) => {
-  drawRandomNote();
+  drawRandomNotes();
 }
 
-drawRandomNote();
+drawRandomNotes();
 
 function query_time() {
   const param = QUERY.filter(p => p.startsWith("time="))[0];
@@ -116,5 +144,5 @@ function query_time() {
 
 const periodMs = query_time();
 if (periodMs) {
-  setInterval(drawRandomNote, periodMs);
+  setInterval(drawRandomNotes, periodMs);
 }
