@@ -1,4 +1,4 @@
-const X_OFFSET = 420;
+const X_OFFSET = 360;
 
 function note(name, y, ledger = null) {
   return { name, y, ledger };
